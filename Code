@@ -1,0 +1,68 @@
+import java.util.Scanner;
+public class Submission {
+    static String[] words = new String[15];
+    public static void main(String[] args) {
+
+        Scanner input = new Scanner(System.in);
+        int n = input.nextInt();
+        if (n > 15) n = 15;
+        for (int i = 0; i < n; i++) {
+            words[i] = input.next();
+        }
+        mergeSort(words, 0, n - 1);
+        System.out.println(countSubsets(n));
+    }
+
+    static void mergeSort(String[] a, int lo, int hi) {
+        if (lo >= hi) return;
+        int middle = (lo + hi) >>> 1;
+        mergeSort(a, lo, middle);
+        mergeSort(a, middle + 1, hi);
+        merge(a, lo, middle, hi);
+    }
+
+    static void merge(String[] a, int lo, int mid, int hi) {
+        String[] temp = new String[hi - lo + 1];
+        int i = lo, j = mid + 1, k = 0;
+        while (i <= mid && j <= hi) {
+            if (a[i].length() <= a[j].length()) temp[k++] = a[i++];
+            else temp[k++] = a[j++];
+        }
+        while (i <= mid) temp[k++] = a[i++];
+        while (j <= hi) temp[k++] = a[j++];
+        System.arraycopy(temp, 0, a, lo, temp.length);
+    }
+
+
+    static int countSubsets(int n) {
+        int count = 0;
+        for (int mask = 1; mask < (1 << n); mask++) {
+            if (Integer.bitCount(mask) < 2) continue;
+            int t = 31 - Integer.numberOfLeadingZeros(mask);
+            int others = mask & ~(1 << t);
+            if (totalLength(others) != words[t].length()) continue;
+            if (DoesContain(words[t], 0, others)) count++;
+        }
+        return count;
+    }
+
+    static int totalLength(int mask) {
+        int sum = 0;
+        for (int i = 0; i < words.length; i++) {
+            if ((mask & (1 << i)) != 0) sum += words[i].length();
+        }
+        return sum;
+    }
+
+    static boolean DoesContain(String target, int position, int remaining) {
+        if (remaining == 0) return position == target.length();
+        for (int i = 0; i < words.length; i++) {
+            if ((remaining & (1 << i)) != 0 && target.startsWith(words[i], position)) {
+                if (DoesContain(target, position + words[i].length(), remaining & ~(1 << i))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+}
